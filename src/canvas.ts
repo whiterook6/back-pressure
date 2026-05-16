@@ -15,7 +15,7 @@ export class CanvasController {
 
     this.canvas = canvas;
     this.context = context;
-  };
+  }
 
   watchResize = () => {
     const resize = () => {
@@ -28,8 +28,8 @@ export class CanvasController {
     window.addEventListener("resize", resize);
 
     return () => window.removeEventListener("resize", resize);
-  }
+  };
 
   getCanvas = () => this.canvas;
   getContext = () => this.context;
-};
+}
