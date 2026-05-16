@@ -15,7 +15,10 @@ export const CanvasController = {
     return context;
   },
 
-  watchResize: (canvas: HTMLCanvasElement, context?: CanvasRenderingContext2D) => {
+  watchResize: (
+    canvas: HTMLCanvasElement,
+    context?: CanvasRenderingContext2D,
+  ) => {
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
       canvas.width = Math.floor(window.innerWidth * dpr);
