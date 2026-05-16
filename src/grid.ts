@@ -1,7 +1,7 @@
-import type { WorldPosition } from "./types";
+import type { WorldPosition, WorldSize } from "./types";
 
 export class GridController {
-  private readonly worldOrigin: WorldPosition
+  private readonly worldOrigin: WorldPosition;
   private readonly cellSize: number;
 
   constructor(worldOrigin: WorldPosition, cellSize: number) {
@@ -11,7 +11,7 @@ export class GridController {
 
   public snapToGrid = (
     world: WorldPosition,
-    size: WorldPosition,
+    size: WorldSize,
   ): WorldPosition => {
     const [worldX, worldY] = world;
     const [width, height] = size;
@@ -26,4 +26,4 @@ export class GridController {
       originY + Math.round((topLeftY - originY) / cell) * cell,
     ];
   };
-};
+}

@@ -1,3 +1,5 @@
+import type { ScreenSize, WorldSize } from "./types";
+
 export class CameraController {
   /** World position at the center of the viewport */
   worldX = 0;
@@ -12,7 +14,7 @@ export class CameraController {
       this.screenHeight = window.innerHeight;
     };
     resize();
-    
+
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
   };
@@ -22,7 +24,7 @@ export class CameraController {
     this.screenHeight = height;
   };
 
-  toScreen = ([worldX, worldY]: [number, number]): [number, number] => {
+  toScreenPosition = ([worldX, worldY]: [number, number]): [number, number] => {
     const z = this.pixelsPerWorldUnit;
     const halfW = this.screenWidth / 2;
     const halfH = this.screenHeight / 2;
@@ -32,7 +34,10 @@ export class CameraController {
     ];
   };
 
-  toWorld = ([screenX, screenY]: [number, number]): [number, number] => {
+  toWorldPosition = ([screenX, screenY]: [number, number]): [
+    number,
+    number,
+  ] => {
     const z = this.pixelsPerWorldUnit;
     const halfW = this.screenWidth / 2;
     const halfH = this.screenHeight / 2;
@@ -50,5 +55,19 @@ export class CameraController {
 
   zoom = (dZoom: number): void => {
     this.pixelsPerWorldUnit *= Math.pow(2, dZoom);
+  };
+
+  toWorldSize = (screenSize: ScreenSize): WorldSize => {
+    return [
+      screenSize[0] / this.pixelsPerWorldUnit,
+      screenSize[1] / this.pixelsPerWorldUnit,
+    ];
+  };
+
+  toScreenSize = (worldSize: WorldSize): ScreenSize => {
+    return [
+      worldSize[0] * this.pixelsPerWorldUnit,
+      worldSize[1] * this.pixelsPerWorldUnit,
+    ];
   };
 }

@@ -16,10 +16,13 @@ const gridController = new GridController([0, 0], 50);
 const mouse = {
   world: [0, 0] as WorldPosition,
   isInBounds: false,
-}
+};
 
 window.addEventListener("mousemove", (event) => {
-  const worldPosition = cameraController.toWorld([event.clientX, event.clientY]);
+  const worldPosition = cameraController.toWorldPosition([
+    event.clientX,
+    event.clientY,
+  ]);
   mouse.world = worldPosition;
   mouse.isInBounds = true;
 });
@@ -37,10 +40,7 @@ const blocks: Array<{
 }> = [];
 window.addEventListener("mousedown", () => {
   if (mouse.isInBounds) {
-    const blockPosition = gridController.snapToGrid(
-      [...mouse.world],
-      [50, 50],
-    );
+    const blockPosition = gridController.snapToGrid([...mouse.world], [50, 50]);
 
     blocks.push({
       x: blockPosition[0],
@@ -56,6 +56,15 @@ window.addEventListener("mouseleave", () => {
   mouse.isInBounds = false;
 });
 
+window.addEventListener(
+  "wheel",
+  (event) => {
+    event.preventDefault();
+    cameraController.zoom(-event.deltaY * 0.001);
+  },
+  { passive: false },
+);
+
 const render = () => {
   const context = canvasController.getContext();
   context.fillStyle = "#ffffff";
@@ -64,18 +73,23 @@ const render = () => {
   context.fillStyle = "#000000";
   for (const block of blocks) {
     context.fillStyle = block.color;
-    const screenPosition = cameraController.toScreen([block.x, block.y]);
-    context.fillRect(screenPosition[0], screenPosition[1], block.width, block.height);
+    const [screenX, screenY] = cameraController.toScreenPosition([
+      block.x,
+      block.y,
+    ]);
+    const [screenWidth, screenHeight] = cameraController.toScreenSize([
+      block.width,
+      block.height,
+    ]);
+    context.fillRect(screenX, screenY, screenWidth, screenHeight);
   }
-  if (mouse.isInBounds) {
 
+  if (mouse.isInBounds) {
     context.fillStyle = "#ff0000";
-    const mousePosition = gridController.snapToGrid(
-      [...mouse.world],
-      [50, 50]
-    );
-    const screenPosition = cameraController.toScreen(mousePosition);
-    context.fillRect(screenPosition[0], screenPosition[1], 50, 50);
+    const mousePosition = gridController.snapToGrid([...mouse.world], [50, 50]);
+    const [screenX, screenY] = cameraController.toScreenPosition(mousePosition);
+    const [screenWidth, screenHeight] = cameraController.toScreenSize([50, 50]);
+    context.fillRect(screenX, screenY, screenWidth, screenHeight);
   }
 };
 
