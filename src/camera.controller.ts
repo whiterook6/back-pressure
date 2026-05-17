@@ -1,4 +1,4 @@
-import type { ScreenSize, WorldSize } from "./types";
+import type { ScreenPosition, ScreenSize, WorldSize } from "./types";
 
 export class CameraController {
   /** World position at the center of the viewport */
@@ -53,8 +53,15 @@ export class CameraController {
     this.worldY -= dScreenY / z;
   };
 
-  zoom = (dZoom: number): void => {
+  zoom = (mousePosition: ScreenPosition, dZoom: number): void => {
+    const [screenX, screenY] = mousePosition;
+    const [worldX, worldY] = this.toWorldPosition(mousePosition);
     this.pixelsPerWorldUnit *= Math.pow(2, dZoom);
+    const z = this.pixelsPerWorldUnit;
+    const halfW = this.screenWidth / 2;
+    const halfH = this.screenHeight / 2;
+    this.worldX = worldX - (screenX - halfW) / z;
+    this.worldY = worldY - (screenY - halfH) / z;
   };
 
   toWorldSize = (screenSize: ScreenSize): WorldSize => {

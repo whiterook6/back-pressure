@@ -1,54 +1,33 @@
-import { AnimationController } from "./animation";
-import { CameraController } from "./camera";
-import { CanvasController } from "./canvas";
-import { GridController } from "./grid";
+import { AnimationController } from "./animation.controller";
+import { BuildingController } from "./building.controller";
+import { CameraController } from "./camera.controller";
+import { CanvasController } from "./canvas.controller";
+import { GridController } from "./grid.controller";
 import "./style.css";
-import type { WorldPosition } from "./types";
+import type { ScreenPosition, WorldPosition } from "./types";
 
 const canvasController = new CanvasController("canvas");
-canvasController.watchResize();
-
 const cameraController = new CameraController();
-cameraController.watchResize();
-
 const gridController = new GridController([0, 0], 50);
+const buildController = new BuildingController(gridController);
+
+canvasController.watchResize();
+cameraController.watchResize();
 
 const mouse = {
   world: [0, 0] as WorldPosition,
+  screen: [0, 0] as ScreenPosition,
   isInBounds: false,
 };
 
 window.addEventListener("mousemove", (event) => {
-  const worldPosition = cameraController.toWorldPosition([
-    event.clientX,
-    event.clientY,
-  ]);
-  mouse.world = worldPosition;
+  mouse.screen = [event.clientX, event.clientY];
+  mouse.world = cameraController.toWorldPosition(mouse.screen);
   mouse.isInBounds = true;
-});
 
-window.addEventListener("mouseleave", () => {
-  mouse.isInBounds = false;
-});
-
-const blocks: Array<{
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-}> = [];
-window.addEventListener("mousedown", () => {
-  if (mouse.isInBounds) {
-    const blockPosition = gridController.snapToGrid([...mouse.world], [50, 50]);
-
-    blocks.push({
-      x: blockPosition[0],
-      y: blockPosition[1],
-      width: 50,
-      height: 50,
-      color: "#000000",
-    });
+  if (buildController.isBuilding()) {
+    const gridPosition = gridController.snapToGrid([...mouse.world], [50, 50]);
+    buildController.build("black", gridPosition);
   }
 });
 
@@ -56,11 +35,22 @@ window.addEventListener("mouseleave", () => {
   mouse.isInBounds = false;
 });
 
+window.addEventListener("mousedown", (event) => {
+  mouse.screen = [event.clientX, event.clientY];
+  mouse.world = cameraController.toWorldPosition(mouse.screen);
+  const gridPosition = gridController.snapToGrid([...mouse.world], [50, 50]);
+  buildController.build("black", gridPosition);
+});
+
+window.addEventListener("mouseup", (event) => {
+  buildController.stopBuild();
+});
+
 window.addEventListener(
   "wheel",
   (event) => {
     event.preventDefault();
-    cameraController.zoom(-event.deltaY * 0.001);
+    cameraController.zoom([...mouse.screen], event.deltaY * 0.001);
   },
   { passive: false },
 );
@@ -70,17 +60,28 @@ const render = () => {
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-  context.fillStyle = "#000000";
-  for (const block of blocks) {
-    context.fillStyle = block.color;
-    const [screenX, screenY] = cameraController.toScreenPosition([
-      block.x,
-      block.y,
-    ]);
-    const [screenWidth, screenHeight] = cameraController.toScreenSize([
-      block.width,
-      block.height,
-    ]);
+  for (const entity of gridController.getEntities()) {
+    if (entity.entity === "none") {
+      continue;
+    }
+
+    switch (entity.entity) {
+      case "red":
+        context.fillStyle = "#ff0000";
+        break;
+      case "black":
+        context.fillStyle = "#000000";
+        break;
+      case "green":
+        context.fillStyle = "#00ff00";
+        break;
+      case "blue":
+        context.fillStyle = "#0000ff";
+        break;
+    }
+
+    const [screenX, screenY] = cameraController.toScreenPosition(entity.position);
+    const [screenWidth, screenHeight] = cameraController.toScreenSize([50, 50]);
     context.fillRect(screenX, screenY, screenWidth, screenHeight);
   }
 
