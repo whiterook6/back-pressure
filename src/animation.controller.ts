@@ -5,7 +5,7 @@ export type Timestamp = {
   /** Time in milliseconds */
   now: number;
 
-  /** time since previous frame in milliseconds */
+  /** Time since previous frame in milliseconds */
   deltaT: number;
 };
 
@@ -48,9 +48,10 @@ export class AnimationController {
       return;
     }
 
-    const now = performance.now();
+    // const now = performance.now();
+    const deltaT = (1000/60);
+    const now = this.previousTime + deltaT;
     const age = now - this.startTime;
-    const deltaT = now - this.previousTime;
     this.previousTime = now;
 
     const timestamp = {
