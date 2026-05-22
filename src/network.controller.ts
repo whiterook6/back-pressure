@@ -1,5 +1,6 @@
 import type { Timestamp } from "./animation.controller";
 import type { CameraController } from "./camera.controller";
+import { Ring } from "./render/ring";
 import type { Fluid, WorldPosition } from "./types";
 
 const BOX_WIDTH = 50;
@@ -36,6 +37,7 @@ export class NetworkController {
   private maxFlowRate: number;
   private position: WorldPosition;
   private lastFlow = 0;
+  private totalFlow = 0;
 
   public constructor(
     fluid: Fluid,
@@ -97,6 +99,7 @@ export class NetworkController {
     }
 
     this.lastFlow = flow;
+    this.totalFlow += flow;
 
     for (const producer of this.producers) {
       producer.pull(flow * (producer.buffer() / totalBuffer));
@@ -111,15 +114,32 @@ export class NetworkController {
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const [screenX, screenY] = camera.toScreenPosition(this.position);
-    const maxFlowPerFrame = this.maxFlowRate / 60;
-    const height = (this.lastFlow / maxFlowPerFrame) * MAX_BAR_HEIGHT;
-    context.fillStyle = "#888888";
-    context.fillRect(
-      screenX - BOX_WIDTH / 2,
-      screenY - height,
-      BOX_WIDTH,
-      height,
+    const fullness = (this.totalFlow % 100) / 100;
+    const start = -Math.PI / 2;
+    const end = start + fullness * 2 * Math.PI;
+    Ring.render(
+      context,
+      camera,
+      this.position,
+      {
+        inner: 32,
+        outer: 38,
+      },
+      "#333",
+      end,
+      start,
+    );
+    Ring.render(
+      context,
+      camera,
+      this.position,
+      {
+        inner: 30,
+        outer: 40,
+      },
+      "#cccccc",
+      start,
+      end,
     );
   };
 }

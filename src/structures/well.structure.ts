@@ -2,9 +2,7 @@ import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
 import type { Producer } from "../network.controller";
 import type { Fluid, WorldPosition } from "../types";
-
-const BOX_WIDTH = 50;
-const MAX_BAR_HEIGHT = 200;
+import { Ring } from "../render/ring";
 
 export class WellStructure {
   fluidType: Fluid;
@@ -55,14 +53,30 @@ export class WellStructure {
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const [screenX, screenY] = camera.toScreenPosition(this.position);
-    const height = (this.buffer / this.maxBuffer) * MAX_BAR_HEIGHT;
-    context.fillStyle = "#4a90d9";
-    context.fillRect(
-      screenX - BOX_WIDTH / 2,
-      screenY - height,
-      BOX_WIDTH,
-      height,
+    const fullness = this.buffer / this.maxBuffer;
+    const start = -Math.PI / 2;
+    const end = start + fullness * 2 * Math.PI;
+    Ring.render(
+      context,
+      camera,
+      this.position, {
+        inner: 32,
+        outer: 38,
+      },
+      "#333",
+      end,
+      start,
+    );
+    Ring.render(
+      context,
+      camera,
+      this.position, {
+        inner: 30,
+        outer: 40,
+      },
+      "#cccccc",
+      start,
+      end,
     );
   };
 }

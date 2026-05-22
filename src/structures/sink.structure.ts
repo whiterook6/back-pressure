@@ -4,9 +4,6 @@ import type { Consumer } from "../network.controller";
 import { Ring } from "../render/ring";
 import type { Fluid, WorldPosition } from "../types";
 
-const BOX_WIDTH = 50;
-const MAX_BAR_HEIGHT = 200;
-
 export class SinkStructure {
   fluidType: Fluid;
   rate: number;
