@@ -2,6 +2,7 @@ import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
 import type { Consumer } from "../network.controller";
 import { Ring } from "../render/ring";
+import { Triangle } from "../render/triangle";
 import type { Fluid, WorldPosition } from "../types";
 
 export class SinkStructure {
@@ -27,7 +28,7 @@ export class SinkStructure {
       fluidType: this.fluidType,
       capacity: () => this.maxCapacity - this.buffer,
       push: (amount: number) => {
-        if (this.buffer + amount > this.maxCapacity){
+        if (this.buffer + amount > this.maxCapacity) {
           const pushed = this.maxCapacity - this.buffer;
           this.buffer = this.maxCapacity;
           return pushed;
@@ -60,7 +61,8 @@ export class SinkStructure {
     Ring.render(
       context,
       camera,
-      this.position, {
+      this.position,
+      {
         inner: 32,
         outer: 38,
       },
@@ -71,7 +73,8 @@ export class SinkStructure {
     Ring.render(
       context,
       camera,
-      this.position, {
+      this.position,
+      {
         inner: 30,
         outer: 40,
       },
@@ -79,5 +82,7 @@ export class SinkStructure {
       start,
       end,
     );
+
+    Triangle.render(context, camera, this.position, "#ff0000", 25);
   };
 }

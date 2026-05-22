@@ -3,6 +3,7 @@ import type { CameraController } from "../camera.controller";
 import type { Producer } from "../network.controller";
 import type { Fluid, WorldPosition } from "../types";
 import { Ring } from "../render/ring";
+import { Triangle } from "../render/triangle";
 
 export class WellStructure {
   fluidType: Fluid;
@@ -26,7 +27,7 @@ export class WellStructure {
       fluidType: this.fluidType,
       buffer: () => this.buffer,
       pull: (amount: number) => {
-        if (this.buffer >= amount){
+        if (this.buffer >= amount) {
           this.buffer -= amount;
           return amount;
         } else {
@@ -59,7 +60,8 @@ export class WellStructure {
     Ring.render(
       context,
       camera,
-      this.position, {
+      this.position,
+      {
         inner: 32,
         outer: 38,
       },
@@ -70,7 +72,8 @@ export class WellStructure {
     Ring.render(
       context,
       camera,
-      this.position, {
+      this.position,
+      {
         inner: 30,
         outer: 40,
       },
@@ -78,5 +81,7 @@ export class WellStructure {
       start,
       end,
     );
+
+    Triangle.render(context, camera, this.position, "#00FF00", 25);
   };
 }

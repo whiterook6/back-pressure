@@ -88,7 +88,7 @@ const render = (timestamp: Timestamp) => {
 const animationController = new AnimationController(render);
 animationController.resume();
 window.addEventListener("keydown", (event) => {
-  if (event.key === " "){
+  if (event.key === " ") {
     animationController.toggle();
   }
 });

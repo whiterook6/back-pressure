@@ -60,5 +60,5 @@ export class GridController {
     for (const entity of this.entities) {
       yield entity;
     }
-  };
+  }
 }

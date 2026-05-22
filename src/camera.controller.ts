@@ -83,5 +83,5 @@ export class CameraController {
    */
   scale = (length: number): number => {
     return length * this.pixelsPerWorldUnit;
-  }
+  };
 }

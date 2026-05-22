@@ -3,9 +3,6 @@ import type { CameraController } from "./camera.controller";
 import { Ring } from "./render/ring";
 import type { Fluid, WorldPosition } from "./types";
 
-const BOX_WIDTH = 50;
-const MAX_BAR_HEIGHT = 200;
-
 export type Consumer = {
   /** The fluid type this consumer is compatible with */
   fluidType: Fluid;
@@ -15,10 +12,9 @@ export type Consumer = {
 
   /** try to push to the consumer, return the amount actually pushed */
   push: (amount: number) => number;
-}
+};
 
 export type Producer = {
-
   /** The fluid type this producer is compatible with */
   fluidType: Fluid;
 
@@ -27,7 +23,7 @@ export type Producer = {
 
   /** try to pull from the producer, return the amount actually pulled */
   pull: (amount: number) => number;
-}
+};
 
 export class NetworkController {
   private producers: Set<Producer> = new Set();
@@ -36,52 +32,46 @@ export class NetworkController {
   /** Max flow rate in fluid units per second when supply and demand are both high */
   private maxFlowRate: number;
   private position: WorldPosition;
-  private lastFlow = 0;
   private totalFlow = 0;
 
-  public constructor(
-    fluid: Fluid,
-    position: WorldPosition,
-    maxFlowRate = 5,
-  ) {
+  public constructor(fluid: Fluid, position: WorldPosition, maxFlowRate = 5) {
     this.fluid = fluid;
     this.position = position;
     this.maxFlowRate = maxFlowRate;
   }
-  
-  public addProducer(obj: {producer: Producer}){
-    if (obj.producer.fluidType === this.fluid){
+
+  public addProducer(obj: { producer: Producer }) {
+    if (obj.producer.fluidType === this.fluid) {
       this.producers.add(obj.producer);
     }
   }
 
-  public removeProducer(obj: {producer: Producer}){
+  public removeProducer(obj: { producer: Producer }) {
     this.producers.delete(obj.producer);
   }
 
-  public addConsumer(obj: {consumer: Consumer}){
-    if (obj.consumer.fluidType === this.fluid){
+  public addConsumer(obj: { consumer: Consumer }) {
+    if (obj.consumer.fluidType === this.fluid) {
       this.consumers.add(obj.consumer);
     }
   }
 
-  public removeConsumer(obj: {consumer: Consumer}){
+  public removeConsumer(obj: { consumer: Consumer }) {
     this.consumers.delete(obj.consumer);
   }
 
-  public update(timestamp: Timestamp){
+  public update(timestamp: Timestamp) {
     let totalCapacity = 0;
-    for (const consumer of this.consumers){
+    for (const consumer of this.consumers) {
       totalCapacity += consumer.capacity();
     }
 
     let totalBuffer = 0;
-    for (const producer of this.producers){
+    for (const producer of this.producers) {
       totalBuffer += producer.buffer();
     }
 
-    if (totalCapacity === 0 || totalBuffer === 0){
-      this.lastFlow = 0;
+    if (totalCapacity === 0 || totalBuffer === 0) {
       return;
     }
 
@@ -94,11 +84,9 @@ export class NetworkController {
     const flow = Math.min(desiredFlow, totalBuffer, totalCapacity);
 
     if (flow <= 0) {
-      this.lastFlow = 0;
       return;
     }
 
-    this.lastFlow = flow;
     this.totalFlow += flow;
 
     for (const producer of this.producers) {
@@ -114,7 +102,7 @@ export class NetworkController {
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const fullness = this.lastFlow / this.maxFlowRate;
+    const fullness = (this.totalFlow % 100) / 100;
     const start = -Math.PI / 2;
     const end = start + fullness * 2 * Math.PI;
     Ring.render(

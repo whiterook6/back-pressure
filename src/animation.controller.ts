@@ -49,7 +49,7 @@ export class AnimationController {
     }
 
     // const now = performance.now();
-    const deltaT = (1000/60);
+    const deltaT = 1000 / 60;
     const now = this.previousTime + deltaT;
     const age = now - this.startTime;
     this.previousTime = now;

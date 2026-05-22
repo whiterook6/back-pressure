@@ -16,32 +16,41 @@ export class BuildingController {
 
   public build = (entity: Entity, gridPosition: GridPosition) => {
     let actualGridPosition: GridPosition;
-    switch (this.mode){
+    switch (this.mode) {
       case "remove":
         return;
       case "build-horizontal":
         actualGridPosition = [gridPosition[0], this.lastGridPosition[1]];
-        if (!this.gridController.isBlocked(actualGridPosition)){
+        if (!this.gridController.isBlocked(actualGridPosition)) {
           this.gridController.place(entity, actualGridPosition);
         }
         return;
       case "build-vertical":
         actualGridPosition = [this.lastGridPosition[0], gridPosition[1]];
-        if (!this.gridController.isBlocked(actualGridPosition)){
+        if (!this.gridController.isBlocked(actualGridPosition)) {
           this.gridController.place(entity, actualGridPosition);
         }
         return;
       case "build":
-        if (this.gridController.isBlocked(gridPosition)){
+        if (this.gridController.isBlocked(gridPosition)) {
           return;
-        } else if (gridPosition[0] === this.lastGridPosition[0] && gridPosition[1] === this.lastGridPosition[1]){
+        } else if (
+          gridPosition[0] === this.lastGridPosition[0] &&
+          gridPosition[1] === this.lastGridPosition[1]
+        ) {
           return;
-        } else if (gridPosition[0] === this.lastGridPosition[0] && gridPosition[1] !== this.lastGridPosition[1]){
+        } else if (
+          gridPosition[0] === this.lastGridPosition[0] &&
+          gridPosition[1] !== this.lastGridPosition[1]
+        ) {
           this.mode = "build-vertical";
           this.gridController.place(entity, gridPosition);
           this.lastGridPosition = gridPosition;
           return;
-        } else if (gridPosition[0] !== this.lastGridPosition[0] && gridPosition[1] === this.lastGridPosition[1]){
+        } else if (
+          gridPosition[0] !== this.lastGridPosition[0] &&
+          gridPosition[1] === this.lastGridPosition[1]
+        ) {
           this.mode = "build-horizontal";
           this.gridController.place(entity, gridPosition);
           this.lastGridPosition = gridPosition;
@@ -53,19 +62,19 @@ export class BuildingController {
         }
       case "none":
       default:
-        if (!this.gridController.isBlocked(gridPosition)){
+        if (!this.gridController.isBlocked(gridPosition)) {
           this.mode = "build";
           this.gridController.place(entity, gridPosition);
           this.lastGridPosition = gridPosition;
         }
     }
-  }
+  };
 
   public isBuilding = (): boolean => {
     return this.mode !== "none";
-  }
+  };
 
   public stopBuild = () => {
     this.mode = "none";
-  }
+  };
 }

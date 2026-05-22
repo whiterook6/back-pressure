@@ -11,8 +11,8 @@ export const Ring = {
      * the radius of the ring in world units
      */
     radius: {
-      inner: number,
-      outer: number,
+      inner: number;
+      outer: number;
     },
 
     color: string,
