@@ -77,4 +77,11 @@ export class CameraController {
       worldSize[1] * this.pixelsPerWorldUnit,
     ];
   };
+
+  /**
+   * given a size in world units, return the size in screen units
+   */
+  scale = (length: number): number => {
+    return length * this.pixelsPerWorldUnit;
+  }
 }

@@ -1,6 +1,7 @@
 import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
 import type { Consumer } from "../network.controller";
+import { Ring } from "../render/ring";
 import type { Fluid, WorldPosition } from "../types";
 
 const BOX_WIDTH = 50;
@@ -56,14 +57,30 @@ export class SinkStructure {
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const [screenX, screenY] = camera.toScreenPosition(this.position);
-    const height = (this.buffer / this.maxCapacity) * MAX_BAR_HEIGHT;
-    context.fillStyle = "#2c5f8a";
-    context.fillRect(
-      screenX - BOX_WIDTH / 2,
-      screenY - height,
-      BOX_WIDTH,
-      height,
+    const fullness = this.buffer / this.maxCapacity;
+    const start = -Math.PI / 2;
+    const end = start + fullness * 2 * Math.PI;
+    Ring.render(
+      context,
+      camera,
+      this.position, {
+        inner: 32,
+        outer: 38,
+      },
+      "#333",
+      end,
+      start,
+    );
+    Ring.render(
+      context,
+      camera,
+      this.position, {
+        inner: 30,
+        outer: 40,
+      },
+      "#cccccc",
+      start,
+      end,
     );
   };
 }
