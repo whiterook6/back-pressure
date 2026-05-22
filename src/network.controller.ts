@@ -1,5 +1,9 @@
 import type { Timestamp } from "./animation.controller";
-import type { Fluid } from "./types";
+import type { CameraController } from "./camera.controller";
+import type { Fluid, WorldPosition } from "./types";
+
+const BOX_WIDTH = 50;
+const MAX_BAR_HEIGHT = 200;
 
 export type Consumer = {
   /** The fluid type this consumer is compatible with */
@@ -30,9 +34,16 @@ export class NetworkController {
   private fluid: Fluid;
   /** Max flow rate in fluid units per second when supply and demand are both high */
   private maxFlowRate: number;
+  private position: WorldPosition;
+  private lastFlow = 0;
 
-  public constructor(fluid: Fluid, maxFlowRate = 30){
+  public constructor(
+    fluid: Fluid,
+    position: WorldPosition,
+    maxFlowRate = 30,
+  ) {
     this.fluid = fluid;
+    this.position = position;
     this.maxFlowRate = maxFlowRate;
   }
   
@@ -68,6 +79,7 @@ export class NetworkController {
     }
 
     if (totalCapacity === 0 || totalBuffer === 0){
+      this.lastFlow = 0;
       return;
     }
 
@@ -80,8 +92,11 @@ export class NetworkController {
     const flow = Math.min(desiredFlow, totalBuffer, totalCapacity);
 
     if (flow <= 0) {
+      this.lastFlow = 0;
       return;
     }
+
+    this.lastFlow = flow;
 
     for (const producer of this.producers) {
       producer.pull(flow * (producer.buffer() / totalBuffer));
@@ -90,6 +105,21 @@ export class NetworkController {
     for (const consumer of this.consumers) {
       consumer.push(flow * (consumer.capacity() / totalCapacity));
     }
-    console.log(`Flow: ${flow}`);
   }
+
+  public render = (
+    context: CanvasRenderingContext2D,
+    camera: CameraController,
+  ) => {
+    const [screenX, screenY] = camera.toScreenPosition(this.position);
+    const maxFlowPerFrame = this.maxFlowRate / 60;
+    const height = (this.lastFlow / maxFlowPerFrame) * MAX_BAR_HEIGHT;
+    context.fillStyle = "#888888";
+    context.fillRect(
+      screenX - BOX_WIDTH / 2,
+      screenY - height,
+      BOX_WIDTH,
+      height,
+    );
+  };
 }

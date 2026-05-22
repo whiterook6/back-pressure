@@ -1,22 +1,29 @@
 import type { Timestamp } from "../animation.controller";
+import type { CameraController } from "../camera.controller";
 import type { Producer } from "../network.controller";
-import type { Fluid } from "../types";
+import type { Fluid, WorldPosition } from "../types";
+
+const BOX_WIDTH = 50;
+const MAX_BAR_HEIGHT = 200;
 
 export class WellStructure {
   fluidType: Fluid;
   rate: number;
   maxBuffer: number;
   buffer: number = 0;
+  position: WorldPosition;
   public readonly producer: Producer;
 
   constructor(
     fluidType: Fluid,
     rate: number,
     maxBuffer: number,
+    position: WorldPosition,
   ) {
     this.fluidType = fluidType;
     this.rate = rate;
     this.maxBuffer = maxBuffer;
+    this.position = position;
     this.producer = {
       fluidType: this.fluidType,
       buffer: () => this.buffer,
@@ -42,6 +49,20 @@ export class WellStructure {
     const headroom = (this.maxBuffer - this.buffer) / this.maxBuffer;
     const increment = this.rate * (timestamp.deltaT / 1000) * headroom;
     this.buffer = Math.min(this.buffer + increment, this.maxBuffer);
-    console.log(`Increment: ${increment}, Buffer: ${this.buffer}`);
+  };
+
+  public render = (
+    context: CanvasRenderingContext2D,
+    camera: CameraController,
+  ) => {
+    const [screenX, screenY] = camera.toScreenPosition(this.position);
+    const height = (this.buffer / this.maxBuffer) * MAX_BAR_HEIGHT;
+    context.fillStyle = "#4a90d9";
+    context.fillRect(
+      screenX - BOX_WIDTH / 2,
+      screenY - height,
+      BOX_WIDTH,
+      height,
+    );
   };
 }

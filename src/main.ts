@@ -16,11 +16,11 @@ cameraController.watchResize();
 
 const gridController = new GridController([0, 0], 50);
 
-const networkController = new NetworkController("water");
-const well = new WellStructure("water", 30, 50);
-const sink = new SinkStructure("water", 30, 200);
-networkController.addProducer(well);
-networkController.addConsumer(sink);
+const networkController = new NetworkController("water", [0, 0]);
+const well = new WellStructure("water", 30, 50, [-120, 0]);
+const sink = new SinkStructure("water", 30, 200, [120, 0]);
+networkController.addProducer({ producer: well.producer });
+networkController.addConsumer({ consumer: sink.consumer });
 
 const mouse = {
   world: [0, 0] as WorldPosition,
@@ -55,6 +55,10 @@ const render = (timestamp: Timestamp) => {
   const context = canvasController.getContext();
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+  well.render(context, cameraController);
+  networkController.render(context, cameraController);
+  sink.render(context, cameraController);
 
   if (mouse.isInBounds) {
     context.fillStyle = "#ff0000";
