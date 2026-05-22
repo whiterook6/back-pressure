@@ -1,7 +1,6 @@
 import { AnimationController, type Timestamp } from "./animation.controller";
 import { CameraController } from "./camera.controller";
 import { CanvasController } from "./canvas.controller";
-import { GridController } from "./grid.controller";
 import { NetworkController } from "./network.controller";
 import { SinkStructure } from "./structures/sink.structure";
 import { WellStructure } from "./structures/well.structure";
@@ -14,11 +13,9 @@ canvasController.watchResize();
 const cameraController = new CameraController();
 cameraController.watchResize();
 
-const gridController = new GridController([0, 0], 50);
-
 const networkController = new NetworkController("water", [0, 0]);
 const well = new WellStructure("water", 30, 50, [-120, 0]);
-const sink = new SinkStructure("water", 30, 200, [120, 0]);
+const sink = new SinkStructure("water", 30, 50, [120, 0]);
 networkController.addProducer({ producer: well.producer });
 networkController.addConsumer({ consumer: sink.consumer });
 
@@ -47,6 +44,33 @@ window.addEventListener(
   { passive: false },
 );
 
+let isPanning = false;
+const handlePanMouseMove = (event: MouseEvent) => {
+  if (!isPanning) {
+    return;
+  }
+  // movementX/Y and the camera both use CSS pixels; do not scale by devicePixelRatio
+  cameraController.pan([event.movementX, event.movementY]);
+};
+
+const handlePanMouseUp = () => {
+  isPanning = false;
+  window.removeEventListener("mousemove", handlePanMouseMove);
+  window.removeEventListener("mouseup", handlePanMouseUp);
+};
+
+const handlePanMouseDown = (event: MouseEvent) => {
+  if (event.button !== 0) {
+    return;
+  }
+  event.preventDefault();
+  isPanning = true;
+  window.addEventListener("mousemove", handlePanMouseMove);
+  window.addEventListener("mouseup", handlePanMouseUp);
+};
+
+window.addEventListener("mousedown", handlePanMouseDown);
+
 const render = (timestamp: Timestamp) => {
   networkController.update(timestamp);
   well.tick(timestamp);
@@ -59,14 +83,6 @@ const render = (timestamp: Timestamp) => {
   well.render(context, cameraController);
   networkController.render(context, cameraController);
   sink.render(context, cameraController);
-
-  if (mouse.isInBounds) {
-    context.fillStyle = "#ff0000";
-    const mousePosition = gridController.snapToGrid([...mouse.world], [50, 50]);
-    const [screenX, screenY] = cameraController.toScreenPosition(mousePosition);
-    const [screenWidth, screenHeight] = cameraController.toScreenSize([50, 50]);
-    context.fillRect(screenX, screenY, screenWidth, screenHeight);
-  }
 };
 
 const animationController = new AnimationController(render);

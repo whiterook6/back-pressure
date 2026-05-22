@@ -42,7 +42,7 @@ export class NetworkController {
   public constructor(
     fluid: Fluid,
     position: WorldPosition,
-    maxFlowRate = 30,
+    maxFlowRate = 5,
   ) {
     this.fluid = fluid;
     this.position = position;
@@ -114,7 +114,7 @@ export class NetworkController {
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const fullness = (this.totalFlow % 100) / 100;
+    const fullness = this.lastFlow / this.maxFlowRate;
     const start = -Math.PI / 2;
     const end = start + fullness * 2 * Math.PI;
     Ring.render(
