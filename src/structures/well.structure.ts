@@ -1,60 +1,42 @@
 import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
-import type { Producer } from "../network.controller";
-import type { Fluid, WorldPosition } from "../types";
+import type { WorldPosition } from "../types";
 import { Ring } from "../render/ring";
 import { Triangle } from "../render/triangle";
+import { FlowBuffer } from "../flow/FlowBuffer";
 
 export class WellStructure {
-  fluidType: Fluid;
+  color: string;
   rate: number;
-  maxBuffer: number;
-  buffer: number = 0;
   position: WorldPosition;
-  public readonly producer: Producer;
+  buffer: FlowBuffer;
 
   constructor(
-    fluidType: Fluid,
+    color: string,
+    /** In units per second */
     rate: number,
+    /** In units */
     maxBuffer: number,
     position: WorldPosition,
   ) {
-    this.fluidType = fluidType;
-    this.rate = rate;
-    this.maxBuffer = maxBuffer;
+    this.color = color;
     this.position = position;
-    this.producer = {
-      fluidType: this.fluidType,
-      buffer: () => this.buffer,
-      pull: (amount: number) => {
-        if (this.buffer >= amount) {
-          this.buffer -= amount;
-          return amount;
-        } else {
-          const pulled = this.buffer;
-          this.buffer = 0;
-          return pulled;
-        }
-      },
-    };
+    this.rate = rate;
+    this.buffer = new FlowBuffer(maxBuffer);
   }
 
-  public tick = (timestamp: Timestamp) => {
-    if (this.buffer >= this.maxBuffer) {
-      this.buffer = this.maxBuffer;
-      return;
-    }
-
-    const headroom = (this.maxBuffer - this.buffer) / this.maxBuffer;
+  public update = (timestamp: Timestamp) => {
+    const headroom =
+      (this.buffer.capacity - this.buffer.level) / this.buffer.capacity;
     const increment = this.rate * (timestamp.deltaT / 1000) * headroom;
-    this.buffer = Math.min(this.buffer + increment, this.maxBuffer);
+    this.buffer.push(increment);
   };
 
   public render = (
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const fullness = this.buffer / this.maxBuffer;
+    const fullness = this.buffer.level / this.buffer.capacity;
     const start = -Math.PI / 2;
     const end = start + fullness * 2 * Math.PI;
     Ring.render(
@@ -65,7 +47,7 @@ export class WellStructure {
         inner: 32,
         outer: 38,
       },
-      "#333",
+      "#333333",
       end,
       start,
     );
@@ -77,7 +59,7 @@ export class WellStructure {
         inner: 30,
         outer: 40,
       },
-      "#cccccc",
+      this.color,
       start,
       end,
     );

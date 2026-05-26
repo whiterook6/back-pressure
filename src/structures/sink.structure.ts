@@ -1,61 +1,46 @@
 import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
-import type { Consumer } from "../network.controller";
+import type { WorldPosition } from "../types";
 import { Ring } from "../render/ring";
 import { Triangle } from "../render/triangle";
-import type { Fluid, WorldPosition } from "../types";
+import { FlowBuffer } from "../flow/FlowBuffer";
 
 export class SinkStructure {
-  fluidType: Fluid;
+  color: string;
   rate: number;
-  maxCapacity: number;
-  buffer: number;
   position: WorldPosition;
-  public readonly consumer: Consumer;
+  buffer: FlowBuffer;
 
   constructor(
-    fluidType: Fluid,
+    color: string,
+    /** In units per second */
     rate: number,
-    maxCapacity: number,
+    /** In units */
+    maxBuffer: number,
     position: WorldPosition,
   ) {
-    this.fluidType = fluidType;
-    this.rate = rate;
-    this.maxCapacity = maxCapacity;
-    this.buffer = 0;
+    this.color = color;
     this.position = position;
-    this.consumer = {
-      fluidType: this.fluidType,
-      capacity: () => this.maxCapacity - this.buffer,
-      push: (amount: number) => {
-        if (this.buffer + amount > this.maxCapacity) {
-          const pushed = this.maxCapacity - this.buffer;
-          this.buffer = this.maxCapacity;
-          return pushed;
-        } else {
-          this.buffer += amount;
-          return amount;
-        }
-      },
-    };
+    this.rate = rate;
+    this.buffer = new FlowBuffer(maxBuffer);
   }
 
-  public tick = (timestamp: Timestamp) => {
-    if (this.buffer <= 0) {
-      this.buffer = 0;
+  public update = (timestamp: Timestamp) => {
+    if (this.buffer.level <= 0) {
+      this.buffer.level = 0;
       return;
     }
 
-    const fullness = this.buffer / this.maxCapacity;
+    const fullness = this.buffer.level / this.buffer.capacity;
     const decrement = this.rate * (timestamp.deltaT / 1000) * fullness;
-    this.buffer = Math.max(this.buffer - decrement, 0);
+    this.buffer.pull(decrement);
   };
 
   public render = (
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const fullness = this.buffer / this.maxCapacity;
+    const fullness = this.buffer.level / this.buffer.capacity;
     const start = -Math.PI / 2;
     const end = start + fullness * 2 * Math.PI;
     Ring.render(
@@ -66,7 +51,7 @@ export class SinkStructure {
         inner: 32,
         outer: 38,
       },
-      "#333",
+      "#333333",
       end,
       start,
     );
@@ -78,11 +63,11 @@ export class SinkStructure {
         inner: 30,
         outer: 40,
       },
-      "#cccccc",
+      this.color,
       start,
       end,
     );
 
-    Triangle.render(context, camera, this.position, "#ff0000", 25);
+    Triangle.render(context, camera, this.position, "#FF00FF", 25);
   };
 }

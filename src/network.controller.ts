@@ -1,87 +1,59 @@
 import type { Timestamp } from "./animation.controller";
 import type { CameraController } from "./camera.controller";
+import type { FlowBuffer } from "./flow/FlowBuffer";
 import { Ring } from "./render/ring";
-import type { Fluid, WorldPosition } from "./types";
-
-export type Consumer = {
-  /** The fluid type this consumer is compatible with */
-  fluidType: Fluid;
-
-  /** How much room is left */
-  capacity: () => number;
-
-  /** try to push to the consumer, return the amount actually pushed */
-  push: (amount: number) => number;
-};
-
-export type Producer = {
-  /** The fluid type this producer is compatible with */
-  fluidType: Fluid;
-
-  /** How much is currently in the buffer */
-  buffer: () => number;
-
-  /** try to pull from the producer, return the amount actually pulled */
-  pull: (amount: number) => number;
-};
+import type { WorldPosition } from "./types";
 
 export class NetworkController {
-  private producers: Set<Producer> = new Set();
-  private consumers: Set<Consumer> = new Set();
-  private fluid: Fluid;
-  /** Max flow rate in fluid units per second when supply and demand are both high */
+  private producers: Set<FlowBuffer> = new Set();
+  private consumers: Set<FlowBuffer> = new Set();
   private maxFlowRate: number;
   private position: WorldPosition;
   private totalFlow = 0;
 
-  public constructor(fluid: Fluid, position: WorldPosition, maxFlowRate = 5) {
-    this.fluid = fluid;
+  public constructor(position: WorldPosition, maxFlowRate = 5) {
     this.position = position;
     this.maxFlowRate = maxFlowRate;
   }
 
-  public addProducer(obj: { producer: Producer }) {
-    if (obj.producer.fluidType === this.fluid) {
-      this.producers.add(obj.producer);
-    }
+  public addProducer(obj: { producer: FlowBuffer }) {
+    this.producers.add(obj.producer);
   }
 
-  public removeProducer(obj: { producer: Producer }) {
+  public removeProducer(obj: { producer: FlowBuffer }) {
     this.producers.delete(obj.producer);
   }
 
-  public addConsumer(obj: { consumer: Consumer }) {
-    if (obj.consumer.fluidType === this.fluid) {
-      this.consumers.add(obj.consumer);
-    }
+  public addConsumer(obj: { consumer: FlowBuffer }) {
+    this.consumers.add(obj.consumer);
   }
 
-  public removeConsumer(obj: { consumer: Consumer }) {
+  public removeConsumer(obj: { consumer: FlowBuffer }) {
     this.consumers.delete(obj.consumer);
   }
 
   public update(timestamp: Timestamp) {
-    let totalCapacity = 0;
+    let totalHeadroom = 0;
     for (const consumer of this.consumers) {
-      totalCapacity += consumer.capacity();
+      totalHeadroom += consumer.capacity - consumer.level;
     }
 
-    let totalBuffer = 0;
+    let totalFluid = 0;
     for (const producer of this.producers) {
-      totalBuffer += producer.buffer();
+      totalFluid += producer.level;
     }
 
-    if (totalCapacity === 0 || totalBuffer === 0) {
+    if (totalHeadroom === 0 || totalFluid === 0) {
       return;
     }
 
     const dt = timestamp.deltaT / 1000;
-    // High when both buffer and capacity are high; low when either is low.
+    // High when both supply and demand headroom are high; low when either is low.
     const coupling =
-      (2 * totalBuffer * totalCapacity) / (totalBuffer + totalCapacity);
-    const scale = Math.max(totalBuffer, totalCapacity);
+      (2 * totalFluid * totalHeadroom) / (totalFluid + totalHeadroom);
+    const scale = Math.max(totalFluid, totalHeadroom);
     const desiredFlow = this.maxFlowRate * dt * (coupling / scale);
-    const flow = Math.min(desiredFlow, totalBuffer, totalCapacity);
+    const flow = Math.min(desiredFlow, totalFluid, totalHeadroom);
 
     if (flow <= 0) {
       return;
@@ -90,11 +62,12 @@ export class NetworkController {
     this.totalFlow += flow;
 
     for (const producer of this.producers) {
-      producer.pull(flow * (producer.buffer() / totalBuffer));
+      producer.pull(flow * (producer.level / totalFluid));
     }
 
     for (const consumer of this.consumers) {
-      consumer.push(flow * (consumer.capacity() / totalCapacity));
+      const headroom = consumer.capacity - consumer.level;
+      consumer.push(flow * (headroom / totalHeadroom));
     }
   }
 

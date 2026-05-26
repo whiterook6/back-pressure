@@ -3,6 +3,7 @@ import { CameraController } from "./camera.controller";
 import { CanvasController } from "./canvas.controller";
 import { NetworkController } from "./network.controller";
 import { SinkStructure } from "./structures/sink.structure";
+import { StirringPlantStructure } from "./structures/stirring.structure";
 import { WellStructure } from "./structures/well.structure";
 import "./style.css";
 import type { ScreenPosition, WorldPosition } from "./types";
@@ -13,11 +14,28 @@ canvasController.watchResize();
 const cameraController = new CameraController();
 cameraController.watchResize();
 
-const networkController = new NetworkController("water", [0, 0]);
-const well = new WellStructure("water", 30, 50, [-120, 0]);
-const sink = new SinkStructure("water", 30, 50, [120, 0]);
-networkController.addProducer({ producer: well.producer });
-networkController.addConsumer({ consumer: sink.consumer });
+const pipes: NetworkController[] = [];
+const structures = [];
+
+const redFluidSource = new WellStructure("#ff0000", 30, 50, [-120, 60]);
+const blueFluidSource = new WellStructure("#0000ff", 15, 100, [-120, -60]);
+const stirringPlant = new StirringPlantStructure([0, 0]);
+const purpleSink = new SinkStructure("#ff00ff", 10, 100, [60, 0]);
+
+const redPipe = new NetworkController([0, 0]);
+redPipe.addProducer({ producer: redFluidSource.buffer });
+redPipe.addConsumer({ consumer: stirringPlant.redInput });
+
+const bluePipe = new NetworkController([0, 0]);
+bluePipe.addProducer({ producer: blueFluidSource.buffer });
+bluePipe.addConsumer({ consumer: stirringPlant.blueInput });
+
+const purplePipe = new NetworkController([0, 0]);
+purplePipe.addProducer({ producer: stirringPlant.purpleOutput });
+purplePipe.addConsumer({ consumer: purpleSink.buffer });
+
+pipes.push(redPipe, bluePipe, purplePipe);
+structures.push(redFluidSource, blueFluidSource, stirringPlant, purpleSink);
 
 const mouse = {
   world: [0, 0] as WorldPosition,
@@ -72,17 +90,16 @@ const handlePanMouseDown = (event: MouseEvent) => {
 window.addEventListener("mousedown", handlePanMouseDown);
 
 const render = (timestamp: Timestamp) => {
-  networkController.update(timestamp);
-  well.tick(timestamp);
-  sink.tick(timestamp);
+  pipes.forEach((pipe) => pipe.update(timestamp));
+  structures.forEach((structure) => structure.update(timestamp));
 
   const context = canvasController.getContext();
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-  well.render(context, cameraController);
-  networkController.render(context, cameraController);
-  sink.render(context, cameraController);
+  structures.forEach((structure) =>
+    structure.render(context, cameraController),
+  );
 };
 
 const animationController = new AnimationController(render);

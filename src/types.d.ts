@@ -4,4 +4,4 @@ export type ScreenPosition = [number, number];
 export type ScreenSize = [number, number];
 export type GridPosition = [number, number];
 
-export type Fluid = "water";
+export type Fluid = string;
