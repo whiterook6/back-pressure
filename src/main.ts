@@ -1,7 +1,7 @@
 import { AnimationController, type Timestamp } from "./animation.controller";
 import { CameraController } from "./camera.controller";
 import { CanvasController } from "./canvas.controller";
-import { NetworkController } from "./network.controller";
+import { FlowPipe } from "./flow/flow.pipe";
 import { SinkStructure } from "./structures/sink.structure";
 import { StirringPlantStructure } from "./structures/stirring.structure";
 import { WellStructure } from "./structures/well.structure";
@@ -14,8 +14,11 @@ canvasController.watchResize();
 const cameraController = new CameraController();
 cameraController.watchResize();
 
-const pipes: NetworkController[] = [];
-const structures = [];
+const pipes: FlowPipe[] = [];
+const structures: Array<{
+  update: (timestamp: Timestamp) => void;
+  render: (context: CanvasRenderingContext2D, camera: CameraController) => void;
+}> = [];
 
 const redFluidSource = new WellStructure("#ff0000", 30, 50, [-120, 60]);
 const blueFluidSource = new WellStructure("#0000ff", 15, 100, [-120, -60]);
@@ -26,23 +29,23 @@ const stirringPlants = [
 ];
 const purpleSink = new SinkStructure("#ff00ff", 10, 100, [100, 0]);
 
-const redPipe = new NetworkController([0, 0], 20, "#ff0000");
-redPipe.addProducer({ producer: redFluidSource.buffer });
+const redPipe = new FlowPipe([0, 0], 20, "#ff0000");
+redPipe.addProducer(redFluidSource.buffer);
 for (const stirringPlant of stirringPlants) {
-  redPipe.addConsumer({ consumer: stirringPlant.redInput });
+  redPipe.addConsumer(stirringPlant.redInput);
 }
 
-const bluePipe = new NetworkController([0, 0], 20, "#0000ff");
-bluePipe.addProducer({ producer: blueFluidSource.buffer });
+const bluePipe = new FlowPipe([0, 0], 20, "#0000ff");
+bluePipe.addProducer(blueFluidSource.buffer);
 for (const stirringPlant of stirringPlants) {
-  bluePipe.addConsumer({ consumer: stirringPlant.blueInput });
+  bluePipe.addConsumer(stirringPlant.blueInput);
 }
 
-const purplePipe = new NetworkController([0, 0], 20, "#ff00ff");
+const purplePipe = new FlowPipe([0, 0], 20, "#ff00ff");
 for (const stirringPlant of stirringPlants) {
-  purplePipe.addProducer({ producer: stirringPlant.purpleOutput });
+  purplePipe.addProducer(stirringPlant.purpleOutput);
 }
-purplePipe.addConsumer({ consumer: purpleSink.buffer });
+purplePipe.addConsumer(purpleSink.buffer);
 
 pipes.push(redPipe, bluePipe, purplePipe);
 structures.push(redFluidSource, blueFluidSource, ...stirringPlants, purpleSink);

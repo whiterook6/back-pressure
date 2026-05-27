@@ -1,6 +1,6 @@
 import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
-import { FlowBuffer } from "../flow/FlowBuffer";
+import { FlowBuffer } from "../flow/flow.buffer";
 import { Ring } from "../render/ring";
 import type { WorldPosition } from "../types";
 
@@ -20,8 +20,8 @@ export class StirringPlantStructure {
 
   constructor(position: WorldPosition) {
     this.position = position;
-    this.redInput = new FlowBuffer(150);
-    this.blueInput = new FlowBuffer(150);
+    this.redInput = new FlowBuffer(100);
+    this.blueInput = new FlowBuffer(100);
     this.purpleOutput = new FlowBuffer(150);
   }
 

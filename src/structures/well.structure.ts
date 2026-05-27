@@ -3,7 +3,7 @@ import type { CameraController } from "../camera.controller";
 import type { WorldPosition } from "../types";
 import { Ring } from "../render/ring";
 import { Triangle } from "../render/triangle";
-import { FlowBuffer } from "../flow/FlowBuffer";
+import { FlowBuffer } from "../flow/flow.buffer";
 
 export class WellStructure {
   color: string;
