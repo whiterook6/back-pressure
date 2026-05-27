@@ -25,11 +25,11 @@ Trying to make a game where you control the flow of fluid with various mechanism
 ## Phase One
 
 - Drag building from dock to layout
-- Pan and zoom camera
+- Pan and zoom camera ✔
 - Click on structure to see status: flow, blocked, starved, etc.
 - Connect outputs to inputs
-- Three fluids: Red + Blue = Purple
-- Structures
-  - Well: produces Red or blue fluid
-  - Chemical Plant: combines Red and Blue to make Purple
-  - Drain: consumes a fluid
+- Three fluids: Red + Blue = Purple ✔
+- Structures ✔
+  - Well: produces Red or blue fluid ✔
+  - Chemical Plant: combines Red and Blue to make Purple ✔
+  - Drain: consumes a fluid ✔
