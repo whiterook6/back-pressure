@@ -57,4 +57,42 @@ export const Ring = {
 
     fillRing(color, start, end);
   },
+
+  renderPercentage: (
+    context: CanvasRenderingContext2D,
+    camera: CameraController,
+    worldPosition: WorldPosition,
+    radius: { inner: number, outer: number },
+    color: string,
+
+    /** 0-1 */
+    percentage: number
+  ) => {
+    const start = -Math.PI / 2;
+    const end = start + percentage * 2 * Math.PI;
+    Ring.render(
+      context,
+      camera,
+      worldPosition,
+      {
+        inner: radius.inner,
+        outer: radius.outer,
+      },
+      "#333333",
+      end,
+      start,
+    );
+    Ring.render(
+      context,
+      camera,
+      worldPosition,
+      {
+        inner: radius.inner,
+        outer: radius.outer,
+      },
+      color,
+      start,
+      end,
+    );
+  },
 };

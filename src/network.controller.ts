@@ -8,12 +8,14 @@ export class NetworkController {
   private producers: Set<FlowBuffer> = new Set();
   private consumers: Set<FlowBuffer> = new Set();
   private maxFlowRate: number;
+  private color: string;
   private position: WorldPosition;
   private totalFlow = 0;
 
-  public constructor(position: WorldPosition, maxFlowRate = 5) {
+  public constructor(position: WorldPosition, maxFlowRate: number, color: string) {
     this.position = position;
     this.maxFlowRate = maxFlowRate;
+    this.color = color;
   }
 
   public addProducer(obj: { producer: FlowBuffer }) {
@@ -52,7 +54,7 @@ export class NetworkController {
     const coupling =
       (2 * totalFluid * totalHeadroom) / (totalFluid + totalHeadroom);
     const scale = Math.max(totalFluid, totalHeadroom);
-    const desiredFlow = this.maxFlowRate * dt * (coupling / scale);
+    const desiredFlow = 100 * dt * (coupling / scale);
     const flow = Math.min(desiredFlow, totalFluid, totalHeadroom);
 
     if (flow <= 0) {

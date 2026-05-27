@@ -37,21 +37,7 @@ export class WellStructure {
     camera: CameraController,
   ) => {
     const fullness = this.buffer.level / this.buffer.capacity;
-    const start = -Math.PI / 2;
-    const end = start + fullness * 2 * Math.PI;
-    Ring.render(
-      context,
-      camera,
-      this.position,
-      {
-        inner: 32,
-        outer: 38,
-      },
-      "#333333",
-      end,
-      start,
-    );
-    Ring.render(
+    Ring.renderPercentage(
       context,
       camera,
       this.position,
@@ -60,8 +46,7 @@ export class WellStructure {
         outer: 40,
       },
       this.color,
-      start,
-      end,
+      fullness,
     );
 
     Triangle.render(context, camera, this.position, "#00FF00", 25);

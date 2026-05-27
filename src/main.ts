@@ -19,23 +19,33 @@ const structures = [];
 
 const redFluidSource = new WellStructure("#ff0000", 30, 50, [-120, 60]);
 const blueFluidSource = new WellStructure("#0000ff", 15, 100, [-120, -60]);
-const stirringPlant = new StirringPlantStructure([0, 0]);
-const purpleSink = new SinkStructure("#ff00ff", 10, 100, [60, 0]);
+const stirringPlants = [
+  new StirringPlantStructure([0, -75]),
+  new StirringPlantStructure([0, 0]),
+  new StirringPlantStructure([0, 75]),
+];
+const purpleSink = new SinkStructure("#ff00ff", 10, 100, [100, 0]);
 
-const redPipe = new NetworkController([0, 0]);
+const redPipe = new NetworkController([0, 0], 20, "#ff0000");
 redPipe.addProducer({ producer: redFluidSource.buffer });
-redPipe.addConsumer({ consumer: stirringPlant.redInput });
+for (const stirringPlant of stirringPlants) {
+  redPipe.addConsumer({ consumer: stirringPlant.redInput });
+}
 
-const bluePipe = new NetworkController([0, 0]);
+const bluePipe = new NetworkController([0, 0], 20, "#0000ff");
 bluePipe.addProducer({ producer: blueFluidSource.buffer });
-bluePipe.addConsumer({ consumer: stirringPlant.blueInput });
+for (const stirringPlant of stirringPlants) {
+  bluePipe.addConsumer({ consumer: stirringPlant.blueInput });
+}
 
-const purplePipe = new NetworkController([0, 0]);
-purplePipe.addProducer({ producer: stirringPlant.purpleOutput });
+const purplePipe = new NetworkController([0, 0], 20, "#ff00ff");
+for (const stirringPlant of stirringPlants) {
+  purplePipe.addProducer({ producer: stirringPlant.purpleOutput });
+}
 purplePipe.addConsumer({ consumer: purpleSink.buffer });
 
 pipes.push(redPipe, bluePipe, purplePipe);
-structures.push(redFluidSource, blueFluidSource, stirringPlant, purpleSink);
+structures.push(redFluidSource, blueFluidSource, ...stirringPlants, purpleSink);
 
 const mouse = {
   world: [0, 0] as WorldPosition,

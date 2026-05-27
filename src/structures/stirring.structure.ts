@@ -28,14 +28,6 @@ export class StirringPlantStructure {
   public update = (timestamp: Timestamp) => {
     switch (this.status) {
       case "waiting":
-        console.log(
-          JSON.stringify({
-            redInput: this.redInput.level,
-            blueInput: this.blueInput.level,
-            redRequired: this.redRequired,
-            blueRequired: this.blueRequired,
-          }),
-        );
         if (
           this.redInput.level >= this.redRequired &&
           this.blueInput.level >= this.blueRequired
@@ -47,16 +39,6 @@ export class StirringPlantStructure {
         }
         break;
       case "processing":
-        console.log(
-          JSON.stringify({
-            redInput: this.redInput.level,
-            blueInput: this.blueInput.level,
-            redRequired: this.redRequired,
-            blueRequired: this.blueRequired,
-            progress: this.progress,
-            timeToProcess: this.timeToProcess,
-          }),
-        );
         if (this.progress >= this.timeToProcess) {
           if (
             this.purpleOutput.level + this.purpleProduced >
@@ -78,47 +60,64 @@ export class StirringPlantStructure {
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
+    Ring.renderPercentage(
+      context,
+      camera,
+      this.position,
+      {
+        inner: 20,
+        outer: 25,
+      },
+      "#0000ff",
+      this.blueInput.level / this.blueRequired
+    );
+    Ring.renderPercentage(
+      context,
+      camera,
+      this.position,
+      {
+        inner: 25,
+        outer: 30,
+      },
+      "#ff0000",
+      this.redInput.level / this.redRequired
+    );
+    Ring.renderPercentage(
+      context,
+      camera,
+      this.position,
+      {
+        inner: 35,
+        outer: 40,
+      },
+      "#FF00FF",
+      this.purpleOutput.level / this.purpleOutput.capacity
+    );
     if (this.status === "waiting") {
       Ring.render(
         context,
         camera,
         this.position,
         {
-          inner: 32,
-          outer: 38,
+          inner: 30,
+          outer: 35,
         },
         "#333333",
         0,
         2 * Math.PI,
       );
     } else {
-      const fullness = this.progress / this.timeToProcess;
-      const start = -Math.PI / 2;
-      const end = start + fullness * 2 * Math.PI;
-      Ring.render(
-        context,
-        camera,
-        this.position,
-        {
-          inner: 32,
-          outer: 38,
-        },
-        "#333333",
-        end,
-        start,
-      );
-      Ring.render(
+      Ring.renderPercentage(
         context,
         camera,
         this.position,
         {
           inner: 30,
-          outer: 40,
+          outer: 35,
         },
         "#00FF00",
-        start,
-        end,
-      );
+        this.progress / this.timeToProcess
+      )
     }
   };
 }
