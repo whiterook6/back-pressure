@@ -1,8 +1,11 @@
 import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
 import type { FlowBuffer } from "../flow/flow.buffer";
-import { Ring } from "../render/ring";
+import { FlowLine } from "../render/flow.line";
 import type { WorldPosition } from "../types";
+
+const MIN_LINE_THICKNESS = 1;
+const MAX_LINE_THICKNESS = 10;
 
 export class FlowPipe {
   private producers: Set<FlowBuffer> = new Set();
@@ -10,9 +13,14 @@ export class FlowPipe {
   private maxFlowRate: number;
   private color: string;
   private position: WorldPosition;
-  private totalFlow = 0;
+  /** Normalized flow for the current frame, 0–1 relative to maxFlowRate. */
+  private frameFlowRatio = 0;
 
-  public constructor(position: WorldPosition, maxFlowRate: number, color: string) {
+  public constructor(
+    position: WorldPosition,
+    maxFlowRate: number,
+    color: string,
+  ) {
     this.position = position;
     this.maxFlowRate = maxFlowRate;
     this.color = color;
@@ -36,14 +44,12 @@ export class FlowPipe {
 
   public update(timestamp: Timestamp) {
     const dt = timestamp.deltaT / 1000;
+    this.frameFlowRatio = 0;
     if (dt <= 0) {
       return;
     }
 
-    const producerAvailability = new Map<
-      FlowBuffer,
-      number
-    >();
+    const producerAvailability = new Map<FlowBuffer, number>();
     let totalAvailable = 0;
     for (const producer of this.producers) {
       const availableByLevel = producer.level;
@@ -52,10 +58,7 @@ export class FlowPipe {
       totalAvailable += available;
     }
 
-    const consumerDemand = new Map<
-      FlowBuffer,
-      number
-    >();
+    const consumerDemand = new Map<FlowBuffer, number>();
     let totalDemand = 0;
     for (const consumer of this.consumers) {
       const headroom = Math.max(0, consumer.capacity - consumer.level);
@@ -74,7 +77,7 @@ export class FlowPipe {
       return;
     }
 
-    this.totalFlow += flow;
+    this.frameFlowRatio = flow / (this.maxFlowRate * dt);
 
     let gathered = 0;
     for (const [producer, available] of producerAvailability) {
@@ -100,32 +103,21 @@ export class FlowPipe {
     context: CanvasRenderingContext2D,
     camera: CameraController,
   ) => {
-    const fullness = (this.totalFlow % 100) / 100;
-    const start = -Math.PI / 2;
-    const end = start + fullness * 2 * Math.PI;
-    Ring.render(
-      context,
-      camera,
-      this.position,
-      {
-        inner: 32,
-        outer: 38,
-      },
-      "#333",
-      end,
-      start,
-    );
-    Ring.render(
-      context,
-      camera,
-      this.position,
-      {
-        inner: 30,
-        outer: 40,
-      },
-      this.color,
-      start,
-      end,
-    );
+    const thickness =
+      MIN_LINE_THICKNESS +
+      this.frameFlowRatio * (MAX_LINE_THICKNESS - MIN_LINE_THICKNESS);
+
+    for (const producer of this.producers) {
+      for (const consumer of this.consumers) {
+        FlowLine.render(
+          context,
+          camera,
+          producer.getPosition(),
+          consumer.getPosition(),
+          thickness,
+          this.color,
+        );
+      }
+    }
   };
 }

@@ -62,11 +62,11 @@ export const Ring = {
     context: CanvasRenderingContext2D,
     camera: CameraController,
     worldPosition: WorldPosition,
-    radius: { inner: number, outer: number },
+    radius: { inner: number; outer: number },
     color: string,
 
     /** 0-1 */
-    percentage: number
+    percentage: number,
   ) => {
     const start = -Math.PI / 2;
     const end = start + percentage * 2 * Math.PI;

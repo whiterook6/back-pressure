@@ -22,8 +22,12 @@ export class SinkStructure {
     this.color = color;
     this.position = position;
     this.rate = rate;
-    this.buffer = new FlowBuffer(maxBuffer);
+    this.buffer = new FlowBuffer(maxBuffer, 0, this);
   }
+
+  public getPosition = (): WorldPosition => {
+    return this.position;
+  };
 
   public update = (timestamp: Timestamp) => {
     if (this.buffer.level <= 0) {

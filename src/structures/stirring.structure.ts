@@ -20,10 +20,14 @@ export class StirringPlantStructure {
 
   constructor(position: WorldPosition) {
     this.position = position;
-    this.redInput = new FlowBuffer(100);
-    this.blueInput = new FlowBuffer(100);
-    this.purpleOutput = new FlowBuffer(150);
+    this.redInput = new FlowBuffer(100, 0, this);
+    this.blueInput = new FlowBuffer(100, 0, this);
+    this.purpleOutput = new FlowBuffer(150, 0, this);
   }
+
+  public getPosition = (): WorldPosition => {
+    return this.position;
+  };
 
   public update = (timestamp: Timestamp) => {
     switch (this.status) {
@@ -69,7 +73,7 @@ export class StirringPlantStructure {
         outer: 25,
       },
       "#0000ff",
-      this.blueInput.level / this.blueRequired
+      this.blueInput.level / this.blueRequired,
     );
     Ring.renderPercentage(
       context,
@@ -80,7 +84,7 @@ export class StirringPlantStructure {
         outer: 30,
       },
       "#ff0000",
-      this.redInput.level / this.redRequired
+      this.redInput.level / this.redRequired,
     );
     Ring.renderPercentage(
       context,
@@ -91,7 +95,7 @@ export class StirringPlantStructure {
         outer: 40,
       },
       "#FF00FF",
-      this.purpleOutput.level / this.purpleOutput.capacity
+      this.purpleOutput.level / this.purpleOutput.capacity,
     );
     if (this.status === "waiting") {
       Ring.render(
@@ -116,8 +120,8 @@ export class StirringPlantStructure {
           outer: 35,
         },
         "#00FF00",
-        this.progress / this.timeToProcess
-      )
+        this.progress / this.timeToProcess,
+      );
     }
   };
 }

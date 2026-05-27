@@ -110,6 +110,7 @@ const render = (timestamp: Timestamp) => {
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
+  pipes.forEach((pipe) => pipe.render(context, cameraController));
   structures.forEach((structure) =>
     structure.render(context, cameraController),
   );

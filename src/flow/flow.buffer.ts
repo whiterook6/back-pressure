@@ -1,6 +1,11 @@
+import type { WorldPosition } from "../types";
+
 export class FlowBuffer {
   level: number;
   capacity: number;
+  anchor: {
+    getPosition: () => WorldPosition;
+  };
 
   constructor(
     /** In units, not percentages */
@@ -8,9 +13,13 @@ export class FlowBuffer {
 
     /** In units, not percentages */
     initialLevel: number = 0,
+    anchor: {
+      getPosition: () => WorldPosition;
+    },
   ) {
     this.capacity = Math.max(0, capacity);
     this.level = Math.max(0, Math.min(initialLevel, capacity));
+    this.anchor = anchor;
   }
 
   push(amount: number) {
@@ -34,4 +43,8 @@ export class FlowBuffer {
       return pulled;
     }
   }
+
+  public getPosition = (): WorldPosition => {
+    return this.anchor.getPosition();
+  };
 }
