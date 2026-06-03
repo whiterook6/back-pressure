@@ -9,6 +9,8 @@ export const Triangle = {
 
     color: string,
     radius: number,
+    /** in radians */
+    rotation: number = 0,
   ) => {
     const [screenX, screenY] = camera.toScreenPosition(position);
     const r = camera.scale(radius);
@@ -16,7 +18,7 @@ export const Triangle = {
     context.fillStyle = color;
     context.beginPath();
 
-    const angles = [-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6];
+    const angles = [-Math.PI / 2 + rotation, Math.PI / 6 + rotation, (5 * Math.PI) / 6 + rotation];
     for (let i = 0; i < angles.length; i++) {
       const vx = screenX + r * Math.cos(angles[i]);
       const vy = screenY + r * Math.sin(angles[i]);

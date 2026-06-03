@@ -69,7 +69,8 @@ export const Ring = {
     percentage: number,
   ) => {
     const start = -Math.PI / 2;
-    const end = start + percentage * 2 * Math.PI;
+    const full = start + percentage * (2 * Math.PI);
+    const end = start + (2 * Math.PI);
     Ring.render(
       context,
       camera,
@@ -79,8 +80,8 @@ export const Ring = {
         outer: radius.outer,
       },
       "#333333",
+      full,
       end,
-      start,
     );
     Ring.render(
       context,
@@ -92,7 +93,7 @@ export const Ring = {
       },
       color,
       start,
-      end,
+      full,
     );
   },
 };

@@ -20,9 +20,9 @@ export class StirringPlantStructure {
 
   constructor(position: WorldPosition) {
     this.position = position;
-    this.redInput = new FlowBuffer(100, 0, this);
-    this.blueInput = new FlowBuffer(100, 0, this);
-    this.purpleOutput = new FlowBuffer(150, 0, this);
+    this.redInput = new FlowBuffer("#ff0000", 100, 0, this);
+    this.blueInput = new FlowBuffer("#0000ff", 100, 0, this);
+    this.purpleOutput = new FlowBuffer("#ff00ff", 150, 0, this);
   }
 
   public getPosition = (): WorldPosition => {

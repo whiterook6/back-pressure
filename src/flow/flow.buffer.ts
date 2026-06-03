@@ -1,6 +1,7 @@
 import type { WorldPosition } from "../types";
 
 export class FlowBuffer {
+  fluid: string;
   level: number;
   capacity: number;
   anchor: {
@@ -8,6 +9,7 @@ export class FlowBuffer {
   };
 
   constructor(
+    fluid: string,
     /** In units, not percentages */
     capacity: number,
 
@@ -17,6 +19,7 @@ export class FlowBuffer {
       getPosition: () => WorldPosition;
     },
   ) {
+    this.fluid = fluid;
     this.capacity = Math.max(0, capacity);
     this.level = Math.max(0, Math.min(initialLevel, capacity));
     this.anchor = anchor;

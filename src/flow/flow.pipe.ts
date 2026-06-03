@@ -2,7 +2,6 @@ import type { Timestamp } from "../animation.controller";
 import type { CameraController } from "../camera.controller";
 import type { FlowBuffer } from "../flow/flow.buffer";
 import { FlowLine } from "../render/flow.line";
-import type { WorldPosition } from "../types";
 
 const MIN_LINE_THICKNESS = 1;
 const MAX_LINE_THICKNESS = 10;
@@ -12,16 +11,13 @@ export class FlowPipe {
   private consumers: Set<FlowBuffer> = new Set();
   private maxFlowRate: number;
   private color: string;
-  private position: WorldPosition;
   /** Normalized flow for the current frame, 0–1 relative to maxFlowRate. */
   private frameFlowRatio = 0;
 
   public constructor(
-    position: WorldPosition,
     maxFlowRate: number,
     color: string,
   ) {
-    this.position = position;
     this.maxFlowRate = maxFlowRate;
     this.color = color;
   }

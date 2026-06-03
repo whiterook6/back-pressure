@@ -22,7 +22,7 @@ export class SinkStructure {
     this.color = color;
     this.position = position;
     this.rate = rate;
-    this.buffer = new FlowBuffer(maxBuffer, 0, this);
+    this.buffer = new FlowBuffer(color, maxBuffer, 0, this);
   }
 
   public getPosition = (): WorldPosition => {
@@ -57,6 +57,6 @@ export class SinkStructure {
       fullness,
     );
 
-    Triangle.render(context, camera, this.position, "#FF00FF", 25);
+    Triangle.render(context, camera, this.position, this.color, 25, Math.PI);
   };
 }

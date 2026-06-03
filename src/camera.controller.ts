@@ -1,4 +1,4 @@
-import type { ScreenPosition, ScreenSize, WorldSize } from "./types";
+import type { ScreenPosition, ScreenSize, WorldPosition, WorldSize } from "./types";
 
 export class CameraController {
   /** World position at the center of the viewport */
@@ -7,6 +7,10 @@ export class CameraController {
   pixelsPerWorldUnit = 1;
   screenWidth = window?.innerWidth || 0;
   screenHeight = window?.innerHeight || 0;
+
+  // gesture controls
+  mousePosition: WorldPosition;
+  isPanning = false;
 
   watchResize = () => {
     const resize = () => {
@@ -17,6 +21,13 @@ export class CameraController {
 
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
+  };
+
+  /**
+   * given a size in world units, return the size in screen units
+   */
+  scale = (length: number): number => {
+    return length * this.pixelsPerWorldUnit;
   };
 
   setViewportSize = ([width, height]: [number, number]): void => {
@@ -34,6 +45,13 @@ export class CameraController {
     ];
   };
 
+  toScreenSize = (worldSize: WorldSize): ScreenSize => {
+    return [
+      worldSize[0] * this.pixelsPerWorldUnit,
+      worldSize[1] * this.pixelsPerWorldUnit,
+    ];
+  };
+
   toWorldPosition = ([screenX, screenY]: [number, number]): [
     number,
     number,
@@ -44,6 +62,13 @@ export class CameraController {
     return [
       (screenX - halfW) / z + this.worldX,
       (screenY - halfH) / z + this.worldY,
+    ];
+  };
+
+  toWorldSize = (screenSize: ScreenSize): WorldSize => {
+    return [
+      screenSize[0] / this.pixelsPerWorldUnit,
+      screenSize[1] / this.pixelsPerWorldUnit,
     ];
   };
 
@@ -64,24 +89,23 @@ export class CameraController {
     this.worldY = worldY - (screenY - halfH) / z;
   };
 
-  toWorldSize = (screenSize: ScreenSize): WorldSize => {
-    return [
-      screenSize[0] / this.pixelsPerWorldUnit,
-      screenSize[1] / this.pixelsPerWorldUnit,
-    ];
-  };
+  // gesture handlers
+  onMouseDown = () => {
+    this.isPanning = true;
+  }
 
-  toScreenSize = (worldSize: WorldSize): ScreenSize => {
-    return [
-      worldSize[0] * this.pixelsPerWorldUnit,
-      worldSize[1] * this.pixelsPerWorldUnit,
-    ];
-  };
+  onMouseUp = () => {
+    this.isPanning = false;
+  }
 
-  /**
-   * given a size in world units, return the size in screen units
-   */
-  scale = (length: number): number => {
-    return length * this.pixelsPerWorldUnit;
-  };
+  onMouseMove = (mouseScreenPosition: ScreenPosition, delta: ScreenPosition) => {
+    this.mousePosition = this.toWorldPosition(mouseScreenPosition);
+    if (this.isPanning) {
+      this.pan(delta);
+    }
+  }
+
+  onWheel = (mouseScreenPosition: ScreenPosition, delta: number) => {
+    this.zoom(mouseScreenPosition, delta * 0.001);
+  }
 }

@@ -18,6 +18,11 @@ body {
   right: 1rem;
   bottom: 1rem;
   min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
   border-radius: 0.75rem;
   background: linear-gradient(180deg, #faf7f2 0%, #f0ebe3 100%);
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -25,4 +30,36 @@ body {
     0 1px 2px rgba(0, 0, 0, 0.08),
     0 6px 16px rgba(0, 0, 0, 0.12);
   pointer-events: auto;
+}
+
+.dock .structure {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.dock .structure:hover {
+  background: #f8f4ee;
+}
+
+.dock .structure.selected {
+  border-color: #4a6fa5;
+  background: #e8f0fa;
+  box-shadow: 0 0 0 1px #4a6fa5;
+}
+
+.dock-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.dock-label {
+  white-space: nowrap;
 }
