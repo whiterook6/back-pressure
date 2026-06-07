@@ -1,6 +1,7 @@
+import type { Gesture } from "./gestures/interaction.controller";
 import type { ScreenPosition, ScreenSize, WorldPosition, WorldSize } from "./types";
 
-export class CameraController {
+export class CameraController implements Gesture {
   /** World position at the center of the viewport */
   worldX = 0;
   worldY = 0;
@@ -98,14 +99,14 @@ export class CameraController {
     this.isPanning = false;
   }
 
-  onMouseMove = (mouseScreenPosition: ScreenPosition, delta: ScreenPosition) => {
+  onMouseMove = (mouseScreenPosition: ScreenPosition, _mouseButtons: number, delta: ScreenPosition) => {
     this.mousePosition = this.toWorldPosition(mouseScreenPosition);
     if (this.isPanning) {
       this.pan(delta);
     }
   }
 
-  onWheel = (mouseScreenPosition: ScreenPosition, delta: number) => {
+  onWheel = (mouseScreenPosition: ScreenPosition, _mouseButtons: number, delta: number) => {
     this.zoom(mouseScreenPosition, delta * 0.001);
   }
 }

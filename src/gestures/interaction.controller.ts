@@ -1,45 +1,55 @@
 import type { ScreenPosition } from "../types";
 
-export type Gesture = Partial<{
-  onMouseDown: (mousePosition: ScreenPosition) => void;
-  onMouseMove: (mousePosition: ScreenPosition, delta: ScreenPosition) => void;
-  onMouseUp: (mousePosition: ScreenPosition) => void;
-  onWheel: (mousePosition: ScreenPosition, delta: number) => void;
-}>;
+export interface Gesture {
+  onMouseDown?: (mousePosition: ScreenPosition, mouseButtons: number) => void;
+  onMouseMove?: (mousePosition: ScreenPosition, mouseButtons: number, delta: ScreenPosition, ) => void;
+  onMouseUp?: (mousePosition: ScreenPosition, mouseButtons: number) => void;
+  onWheel?: (mousePosition: ScreenPosition, mouseButtons: number, delta: number) => void;
+};
 
-export class InteractionController {
-  mousePosition: ScreenPosition;
-  activeGesture: Gesture;
+export const InteractionController = {
+  activeGesture: {} as Gesture,
+  mouseButtons: 0 as number,
+  mousePosition: [0, 0] as ScreenPosition,
 
-  constructor(){}
+  watchEvents: () => {
+    window.addEventListener("mousemove", InteractionController.onMouseMove);
+    window.addEventListener("mousedown", InteractionController.onMouseDown);
+    window.addEventListener("mouseup", InteractionController.onMouseUp);
+    window.addEventListener("wheel", InteractionController.onWheel);
+  },
 
-  watchEvents = () => {
-    window.addEventListener("mousemove", this.onMouseMove.bind(this));
-    window.addEventListener("mousedown", this.onMouseDown.bind(this));
-    window.addEventListener("mouseup", this.onMouseUp.bind(this));
-    window.addEventListener("wheel", this.onWheel.bind(this));
-  }
+  startGesture: (gesture: Gesture) => {
+    InteractionController.activeGesture = gesture;
+  },
 
-  startGesture = (gesture: Gesture) => {
-    this.activeGesture = gesture;
-  }
+  cancelGesture: () => {
+    InteractionController.activeGesture = {};
+  },
 
-  cancelGesture = () => {
-    this.activeGesture = {};
-  }
-
-  onMouseMove = (event: MouseEvent) => {
+  onMouseMove: (event: MouseEvent) => {
+    InteractionController.setMouseProperties(event);
     const delta = [event.movementX, event.movementY] as ScreenPosition;
-    this.mousePosition = [event.clientX, event.clientY] as ScreenPosition;
-    this.activeGesture.onMouseMove?.(this.mousePosition, delta);
-  }
-  onMouseDown = () => {
-    this.activeGesture.onMouseDown?.(this.mousePosition);
-  }
-  onMouseUp = () => {
-    this.activeGesture.onMouseUp?.(this.mousePosition);
-  }
-  onWheel = (event: WheelEvent) => {
-    this.activeGesture.onWheel?.(this.mousePosition, event.deltaY);
+    InteractionController.activeGesture.onMouseMove?.(InteractionController.mousePosition, event.buttons,delta);
+  },
+
+  onMouseDown: (event: MouseEvent) => {
+    InteractionController.setMouseProperties(event);
+    InteractionController.activeGesture.onMouseDown?.(InteractionController.mousePosition, event.buttons);
+  },
+
+  onMouseUp: (event: MouseEvent) => {
+    InteractionController.setMouseProperties(event);
+    InteractionController.activeGesture.onMouseUp?.(InteractionController.mousePosition, event.buttons);
+  },
+
+  onWheel: (event: WheelEvent) => {
+    InteractionController.setMouseProperties(event);
+    InteractionController.activeGesture.onWheel?.(InteractionController.mousePosition, event.buttons, event.deltaY);
+  },
+
+  setMouseProperties: (event: MouseEvent | WheelEvent) => {
+    InteractionController.mouseButtons = event.buttons;
+    InteractionController.mousePosition = [event.clientX, event.clientY] as ScreenPosition;
   }
 } 
