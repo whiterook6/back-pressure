@@ -1,12 +1,21 @@
-import type { Entity } from "./building.controller";
-import type { GridPosition, WorldPosition, WorldSize } from "./types";
+import type {
+  GridPosition,
+  PlacedStructure,
+  WorldPosition,
+  WorldSize,
+} from "./types";
+
+export const toCenter = (
+  topLeft: GridPosition,
+  size: WorldSize,
+): WorldPosition => [topLeft[0] + size[0] / 2, topLeft[1] + size[1] / 2];
 
 export class GridController {
   private readonly worldOrigin: WorldPosition;
   private readonly cellSize: number;
   private entities: Array<{
     position: GridPosition;
-    entity: Entity;
+    structure: PlacedStructure;
   }>;
 
   constructor(worldOrigin: WorldPosition, cellSize: number) {
@@ -39,10 +48,10 @@ export class GridController {
     });
   };
 
-  public place = (entity: Entity, gridPosition: GridPosition) => {
+  public place = (structure: PlacedStructure, gridPosition: GridPosition) => {
     this.entities.push({
       position: gridPosition,
-      entity,
+      structure,
     });
   };
 
@@ -52,10 +61,9 @@ export class GridController {
     });
   };
 
-  // return an iterator of the entities
   public *getEntities(): IterableIterator<{
     position: GridPosition;
-    entity: Entity;
+    structure: PlacedStructure;
   }> {
     for (const entity of this.entities) {
       yield entity;

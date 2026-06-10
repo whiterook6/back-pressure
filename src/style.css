@@ -63,3 +63,17 @@ body {
 .dock-label {
   white-space: nowrap;
 }
+
+.dock-fluid {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem;
+  background: #fff;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.dock-fluid:hover {
+  background: #f8f4ee;
+}

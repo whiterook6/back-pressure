@@ -18,7 +18,11 @@ export const Triangle = {
     context.fillStyle = color;
     context.beginPath();
 
-    const angles = [-Math.PI / 2 + rotation, Math.PI / 6 + rotation, (5 * Math.PI) / 6 + rotation];
+    const angles = [
+      -Math.PI / 2 + rotation,
+      Math.PI / 6 + rotation,
+      (5 * Math.PI) / 6 + rotation,
+    ];
     for (let i = 0; i < angles.length; i++) {
       const vx = screenX + r * Math.cos(angles[i]);
       const vy = screenY + r * Math.sin(angles[i]);

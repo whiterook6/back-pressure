@@ -70,7 +70,7 @@ export const Ring = {
   ) => {
     const start = -Math.PI / 2;
     const full = start + percentage * (2 * Math.PI);
-    const end = start + (2 * Math.PI);
+    const end = start + 2 * Math.PI;
     Ring.render(
       context,
       camera,

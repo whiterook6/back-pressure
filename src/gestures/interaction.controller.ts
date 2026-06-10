@@ -2,10 +2,18 @@ import type { ScreenPosition } from "../types";
 
 export interface Gesture {
   onMouseDown?: (mousePosition: ScreenPosition, mouseButtons: number) => void;
-  onMouseMove?: (mousePosition: ScreenPosition, mouseButtons: number, delta: ScreenPosition, ) => void;
+  onMouseMove?: (
+    mousePosition: ScreenPosition,
+    mouseButtons: number,
+    delta: ScreenPosition,
+  ) => void;
   onMouseUp?: (mousePosition: ScreenPosition, mouseButtons: number) => void;
-  onWheel?: (mousePosition: ScreenPosition, mouseButtons: number, delta: number) => void;
-};
+  onWheel?: (
+    mousePosition: ScreenPosition,
+    mouseButtons: number,
+    delta: number,
+  ) => void;
+}
 
 export const InteractionController = {
   activeGesture: {} as Gesture,
@@ -30,26 +38,43 @@ export const InteractionController = {
   onMouseMove: (event: MouseEvent) => {
     InteractionController.setMouseProperties(event);
     const delta = [event.movementX, event.movementY] as ScreenPosition;
-    InteractionController.activeGesture.onMouseMove?.(InteractionController.mousePosition, event.buttons,delta);
+    InteractionController.activeGesture.onMouseMove?.(
+      InteractionController.mousePosition,
+      event.buttons,
+      delta,
+    );
   },
 
   onMouseDown: (event: MouseEvent) => {
     InteractionController.setMouseProperties(event);
-    InteractionController.activeGesture.onMouseDown?.(InteractionController.mousePosition, event.buttons);
+    InteractionController.activeGesture.onMouseDown?.(
+      InteractionController.mousePosition,
+      event.buttons,
+    );
   },
 
   onMouseUp: (event: MouseEvent) => {
     InteractionController.setMouseProperties(event);
-    InteractionController.activeGesture.onMouseUp?.(InteractionController.mousePosition, event.buttons);
+    InteractionController.activeGesture.onMouseUp?.(
+      InteractionController.mousePosition,
+      event.buttons,
+    );
   },
 
   onWheel: (event: WheelEvent) => {
     InteractionController.setMouseProperties(event);
-    InteractionController.activeGesture.onWheel?.(InteractionController.mousePosition, event.buttons, event.deltaY);
+    InteractionController.activeGesture.onWheel?.(
+      InteractionController.mousePosition,
+      event.buttons,
+      event.deltaY,
+    );
   },
 
   setMouseProperties: (event: MouseEvent | WheelEvent) => {
     InteractionController.mouseButtons = event.buttons;
-    InteractionController.mousePosition = [event.clientX, event.clientY] as ScreenPosition;
-  }
-} 
+    InteractionController.mousePosition = [
+      event.clientX,
+      event.clientY,
+    ] as ScreenPosition;
+  },
+};

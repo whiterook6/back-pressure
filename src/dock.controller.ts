@@ -22,6 +22,18 @@ export type DockItem = {
 const STRUCTURE_FOOTPRINT: WorldSize = [80, 80];
 const STRUCTURE_MIN_SPACING = 75;
 
+export type FluidColor = "red" | "blue" | "purple";
+
+export const FLUIDS: Record<FluidColor, { label: string; color: string }> = {
+  red: { label: "Red", color: "#ff0000" },
+  blue: { label: "Blue", color: "#0000ff" },
+  purple: { label: "Purple", color: "#ff00ff" },
+};
+
+let selectedFluid: FluidColor = "red";
+
+const getFluidColor = (): string => FLUIDS[selectedFluid].color;
+
 const renderWellPreview = (
   context: CanvasRenderingContext2D,
   camera: CameraController,
@@ -85,17 +97,17 @@ const dockItems: DockItem[] = [
     label: "Sink",
     footprint: STRUCTURE_FOOTPRINT,
     minSpacing: STRUCTURE_MIN_SPACING,
-    create: (position) => new SinkStructure("#808080", 10, 100, position),
+    create: (position) => new SinkStructure(getFluidColor(), 10, 100, position),
     renderPreview: (context, camera, position) =>
-      renderWellPreview(context, camera, position, "#808080", Math.PI),
+      renderWellPreview(context, camera, position, getFluidColor(), Math.PI),
   },
   {
     label: "Well",
     footprint: STRUCTURE_FOOTPRINT,
     minSpacing: STRUCTURE_MIN_SPACING,
-    create: (position) => new WellStructure("#808080", 30, 50, position),
+    create: (position) => new WellStructure(getFluidColor(), 30, 50, position),
     renderPreview: (context, camera, position) =>
-      renderWellPreview(context, camera, position, "#808080", 0),
+      renderWellPreview(context, camera, position, getFluidColor(), 0),
   },
   {
     label: "Stirring Plant",
@@ -108,6 +120,13 @@ const dockItems: DockItem[] = [
 
 let pickedIndex: number | null = null;
 const dockButtons: HTMLButtonElement[] = [];
+const dockIcons: HTMLCanvasElement[] = [];
+
+let pickChangeCallback: ((item: DockItem | null) => void) | undefined;
+
+const notifyPickChange = () => {
+  pickChangeCallback?.(pickedIndex === null ? null : dockItems[pickedIndex]);
+};
 
 const updateDockSelection = () => {
   dockButtons.forEach((button, index) => {
@@ -117,10 +136,7 @@ const updateDockSelection = () => {
   });
 };
 
-const renderDockIcon = (
-  canvas: HTMLCanvasElement,
-  item: DockItem,
-) => {
+const renderDockIcon = (canvas: HTMLCanvasElement, item: DockItem) => {
   const size = 32;
   const dpr = window.devicePixelRatio || 1;
   canvas.width = Math.floor(size * dpr);
@@ -142,9 +158,22 @@ const renderDockIcon = (
   item.renderPreview(context, camera, [0, 0]);
 };
 
+const refreshFluidIcons = () => {
+  for (const index of [0, 1]) {
+    const icon = dockIcons[index];
+    if (icon) {
+      renderDockIcon(icon, dockItems[index]);
+    }
+  }
+};
+
 export const DockController = {
   get pickedItem(): DockItem | null {
     return pickedIndex === null ? null : dockItems[pickedIndex];
+  },
+
+  get selectedFluid(): FluidColor {
+    return selectedFluid;
   },
 
   pickItem: (slot: number) => {
@@ -154,16 +183,44 @@ export const DockController = {
       pickedIndex = slot;
     }
     updateDockSelection();
+    notifyPickChange();
   },
 
   clearPick: () => {
     pickedIndex = null;
     updateDockSelection();
+    notifyPickChange();
+  },
+
+  set onPickChange(callback: ((item: DockItem | null) => void) | undefined) {
+    pickChangeCallback = callback;
   },
 
   buildDock: (element: HTMLElement) => {
     element.innerHTML = "";
     dockButtons.length = 0;
+    dockIcons.length = 0;
+
+    const fluidSelect = document.createElement("select");
+    fluidSelect.classList.add("dock-fluid");
+    fluidSelect.setAttribute("aria-label", "Fluid color");
+
+    for (const [value, { label }] of Object.entries(FLUIDS) as Array<
+      [FluidColor, { label: string; color: string }]
+    >) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      fluidSelect.appendChild(option);
+    }
+
+    fluidSelect.value = selectedFluid;
+    fluidSelect.addEventListener("change", () => {
+      selectedFluid = fluidSelect.value as FluidColor;
+      refreshFluidIcons();
+    });
+
+    element.appendChild(fluidSelect);
 
     dockItems.forEach((item, index) => {
       const button = document.createElement("button");
@@ -186,6 +243,7 @@ export const DockController = {
 
       element.appendChild(button);
       dockButtons.push(button);
+      dockIcons.push(icon);
     });
   },
 };

@@ -14,10 +14,7 @@ export class FlowPipe {
   /** Normalized flow for the current frame, 0–1 relative to maxFlowRate. */
   private frameFlowRatio = 0;
 
-  public constructor(
-    maxFlowRate: number,
-    color: string,
-  ) {
+  public constructor(maxFlowRate: number, color: string) {
     this.maxFlowRate = maxFlowRate;
     this.color = color;
   }
