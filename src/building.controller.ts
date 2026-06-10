@@ -47,7 +47,7 @@ export class BuildingController implements Gesture {
   private snapGridPosition = (
     screenPosition: ScreenPosition,
   ): GridPosition | null => {
-    if (!this.activeItem) {
+    if (!this.activeItem?.footprint) {
       return null;
     }
     const world = this.cameraController.toWorldPosition(screenPosition);
@@ -55,7 +55,7 @@ export class BuildingController implements Gesture {
   };
 
   private placeAt = (gridPosition: GridPosition) => {
-    if (!this.activeItem) {
+    if (!this.activeItem?.footprint || !this.activeItem.create) {
       return;
     }
     const center = toCenter(gridPosition, this.activeItem.footprint);

@@ -48,6 +48,32 @@ export class GridController {
     });
   };
 
+  public isBlockedExcept = (
+    gridPosition: GridPosition,
+    except: PlacedStructure,
+  ): boolean => {
+    return this.entities.some(({ position, structure }) => {
+      if (structure === except) {
+        return false;
+      }
+      return position[0] === gridPosition[0] && position[1] === gridPosition[1];
+    });
+  };
+
+  public getGridPosition = (
+    structure: PlacedStructure,
+  ): GridPosition | null => {
+    const entity = this.entities.find(({ structure: s }) => s === structure);
+    return entity?.position ?? null;
+  };
+
+  public move = (structure: PlacedStructure, gridPosition: GridPosition) => {
+    const entity = this.entities.find(({ structure: s }) => s === structure);
+    if (entity) {
+      entity.position = gridPosition;
+    }
+  };
+
   public place = (structure: PlacedStructure, gridPosition: GridPosition) => {
     this.entities.push({
       position: gridPosition,

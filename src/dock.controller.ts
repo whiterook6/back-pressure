@@ -9,9 +9,10 @@ import type { PlacedStructure, WorldPosition, WorldSize } from "./types";
 
 export type DockItem = {
   label: string;
-  footprint: WorldSize;
-  minSpacing: number;
-  create: (position: WorldPosition) => PlacedStructure;
+  kind?: "structure" | "connect" | "move";
+  footprint?: WorldSize;
+  minSpacing?: number;
+  create?: (position: WorldPosition) => PlacedStructure;
   renderPreview: (
     context: CanvasRenderingContext2D,
     camera: CameraController,
@@ -19,7 +20,7 @@ export type DockItem = {
   ) => void;
 };
 
-const STRUCTURE_FOOTPRINT: WorldSize = [80, 80];
+export const STRUCTURE_FOOTPRINT: WorldSize = [80, 80];
 const STRUCTURE_MIN_SPACING = 75;
 
 export type FluidColor = "red" | "blue" | "purple";
@@ -92,9 +93,72 @@ const renderStirringPreview = (
   );
 };
 
+const renderMovePreview = (
+  context: CanvasRenderingContext2D,
+  camera: CameraController,
+  position: WorldPosition,
+) => {
+  const [cx, cy] = camera.toScreenPosition(position);
+  const arm = camera.scale(12);
+
+  context.strokeStyle = "#333333";
+  context.fillStyle = "#333333";
+  context.lineWidth = 2;
+  context.lineCap = "round";
+
+  const drawArrow = (dx: number, dy: number) => {
+    const tipX = cx + dx * arm;
+    const tipY = cy + dy * arm;
+    const perpX = -dy * camera.scale(4);
+    const perpY = dx * camera.scale(4);
+
+    context.beginPath();
+    context.moveTo(cx, cy);
+    context.lineTo(tipX, tipY);
+    context.stroke();
+
+    context.beginPath();
+    context.moveTo(tipX, tipY);
+    context.lineTo(tipX - dx * camera.scale(6) + perpX, tipY - dy * camera.scale(6) + perpY);
+    context.lineTo(tipX - dx * camera.scale(6) - perpX, tipY - dy * camera.scale(6) - perpY);
+    context.closePath();
+    context.fill();
+  };
+
+  drawArrow(0, -1);
+  drawArrow(0, 1);
+  drawArrow(-1, 0);
+  drawArrow(1, 0);
+};
+
+const renderConnectPreview = (
+  context: CanvasRenderingContext2D,
+  camera: CameraController,
+  position: WorldPosition,
+) => {
+  const [cx, cy] = camera.toScreenPosition(position);
+  const offset = camera.scale(30);
+
+  context.strokeStyle = "#333333";
+  context.fillStyle = "#333333";
+  context.lineWidth = 2;
+
+  context.beginPath();
+  context.moveTo(cx - offset, cy);
+  context.lineTo(cx + offset, cy);
+  context.stroke();
+
+  for (const x of [cx - offset, cx + offset]) {
+    context.beginPath();
+    context.arc(x, cy, 4, 0, 2 * Math.PI);
+    context.fill();
+  }
+};
+
 const dockItems: DockItem[] = [
   {
     label: "Sink",
+    kind: "structure",
     footprint: STRUCTURE_FOOTPRINT,
     minSpacing: STRUCTURE_MIN_SPACING,
     create: (position) => new SinkStructure(getFluidColor(), 10, 100, position),
@@ -103,6 +167,7 @@ const dockItems: DockItem[] = [
   },
   {
     label: "Well",
+    kind: "structure",
     footprint: STRUCTURE_FOOTPRINT,
     minSpacing: STRUCTURE_MIN_SPACING,
     create: (position) => new WellStructure(getFluidColor(), 30, 50, position),
@@ -111,10 +176,21 @@ const dockItems: DockItem[] = [
   },
   {
     label: "Stirring Plant",
+    kind: "structure",
     footprint: STRUCTURE_FOOTPRINT,
     minSpacing: STRUCTURE_MIN_SPACING,
     create: (position) => new StirringPlantStructure(position),
     renderPreview: renderStirringPreview,
+  },
+  {
+    label: "Connect",
+    kind: "connect",
+    renderPreview: renderConnectPreview,
+  },
+  {
+    label: "Move",
+    kind: "move",
+    renderPreview: renderMovePreview,
   },
 ];
 

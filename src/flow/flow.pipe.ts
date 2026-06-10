@@ -35,6 +35,27 @@ export class FlowPipe {
     this.consumers.delete(consumer);
   }
 
+  public hasBuffer(buffer: FlowBuffer): boolean {
+    return this.producers.has(buffer) || this.consumers.has(buffer);
+  }
+
+  public mergeFrom(other: FlowPipe): void {
+    for (const producer of other.producers) {
+      this.producers.add(producer);
+    }
+    for (const consumer of other.consumers) {
+      this.consumers.add(consumer);
+    }
+  }
+
+  public getProducers(): FlowBuffer[] {
+    return [...this.producers];
+  }
+
+  public getConsumers(): FlowBuffer[] {
+    return [...this.consumers];
+  }
+
   public update(timestamp: Timestamp) {
     const dt = timestamp.deltaT / 1000;
     this.frameFlowRatio = 0;

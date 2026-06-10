@@ -2,7 +2,9 @@ import { AnimationController, type Timestamp } from "./animation.controller";
 import { BuildingController } from "./building.controller";
 import { CameraController } from "./camera.controller";
 import { CanvasController } from "./canvas.controller";
+import { ConnectionController } from "./connection.controller";
 import { DockController } from "./dock.controller";
+import { MoveController } from "./move.controller";
 import { FlowPipe } from "./flow/flow.pipe";
 import { InteractionController } from "./gestures/interaction.controller";
 import { GridController, toCenter } from "./grid.controller";
@@ -30,17 +32,34 @@ const buildingController = new BuildingController(
   () => DockController.clearPick(),
 );
 
+const connectionController = new ConnectionController(
+  gridController,
+  cameraController,
+  pipes,
+  () => DockController.clearPick(),
+);
+
+const moveController = new MoveController(
+  gridController,
+  cameraController,
+  () => DockController.clearPick(),
+);
+
 const dockElement = document.getElementById("dock") as HTMLElement;
 DockController.buildDock(dockElement);
 
 DockController.onPickChange = (item) => {
-  if (item) {
-    buildingController.setActiveItem(item);
-    InteractionController.startGesture(buildingController);
-  } else {
+  if (!item) {
     buildingController.setActiveItem(null);
     buildingController.stopBuild();
     InteractionController.startGesture(cameraController);
+  } else if (item.kind === "connect") {
+    InteractionController.startGesture(connectionController);
+  } else if (item.kind === "move") {
+    InteractionController.startGesture(moveController);
+  } else {
+    buildingController.setActiveItem(item);
+    InteractionController.startGesture(buildingController);
   }
 };
 
@@ -70,17 +89,23 @@ const render = (timestamp: Timestamp) => {
 
   const item = DockController.pickedItem;
   if (item && mouseOnCanvas) {
-    const topLeft = gridController.snapToGrid(
-      cameraController.mousePosition,
-      item.footprint,
-    );
-    const center = toCenter(topLeft, item.footprint);
-    const blocked = gridController.isBlocked(topLeft);
+    if (item.kind === "connect") {
+      connectionController.renderPreview(context, cameraController);
+    } else if (item.kind === "move") {
+      moveController.renderPreview(context, cameraController);
+    } else if (item.footprint) {
+      const topLeft = gridController.snapToGrid(
+        cameraController.mousePosition,
+        item.footprint,
+      );
+      const center = toCenter(topLeft, item.footprint);
+      const blocked = gridController.isBlocked(topLeft);
 
-    context.save();
-    context.globalAlpha = blocked ? 0.35 : 0.6;
-    item.renderPreview(context, cameraController, center);
-    context.restore();
+      context.save();
+      context.globalAlpha = blocked ? 0.35 : 0.6;
+      item.renderPreview(context, cameraController, center);
+      context.restore();
+    }
   }
 };
 
